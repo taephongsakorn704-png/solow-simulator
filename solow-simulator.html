@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solow Model Web Simulator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--text:#14213d;--muted:#5b6578;--line:#dde3ec;--accent:#1d4ed8;--c1:#1d4ed8;--c2:#16a34a;--c3:#dc2626;--hl:#fff7e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--card:#182136;--text:#e8edf7;--muted:#9aa6bd;--line:#2a3550;--accent:#6ea0ff;--c1:#6ea0ff;--c2:#4ade80;--c3:#f87171;--hl:#2b2a1a}}
+:root[data-theme="dark"]{--bg:#0f1624;--card:#182136;--text:#e8edf7;--muted:#9aa6bd;--line:#2a3550;--accent:#6ea0ff;--c1:#6ea0ff;--c2:#4ade80;--c3:#f87171;--hl:#2b2a1a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans Thai","Sarabun",Tahoma,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+h1{margin:0;font-size:1.7rem}
+.who{color:var(--muted);margin:4px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+h2{font-size:1.1rem;margin:0 0 10px}
+.eq{font-family:"Cambria Math",Georgia,serif;font-size:1.05rem;background:var(--bg);border-radius:8px;padding:10px 14px;margin:8px 0}
+.eq div{margin:2px 0}
+ul{margin:6px 0 0;padding-left:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.row{margin-bottom:12px}
+.row label{display:flex;justify-content:space-between;font-weight:600}
+.row output{color:var(--accent);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+button{font:inherit;border:1px solid var(--accent);background:transparent;color:var(--accent);padding:8px 12px;border-radius:8px;cursor:pointer}
+button.on{background:var(--accent);color:var(--card)}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.res div{background:var(--hl);border-radius:8px;padding:10px;text-align:center}
+.res small{display:block;color:var(--muted)}
+.res b{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.chartbox{overflow-x:auto}
+svg{width:100%;height:auto;display:block;min-width:480px}
+svg text{fill:var(--muted);font-size:12px;font-family:inherit}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:.9rem}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+.tw{overflow-x:auto}
+.note{color:var(--muted);font-size:.9rem;margin-top:8px}
+.warn{color:var(--c3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Solow Model Web Simulator</h1>
+  <div class="who"><span id="nm"></span> · รหัสนักศึกษา: <span id="sid"></span></div>
+
+  <div class="card">
+    <h2>1. แบบจำลอง</h2>
+    <div class="eq">
+      <div>ผลผลิต: Y = A·√K</div>
+      <div>การลงทุน: I = s·Y</div>
+      <div>ค่าเสื่อม: D = δ·K</div>
+      <div>ทุนที่เปลี่ยนไปในแต่ละช่วง: ΔK = sY − δK</div>
+    </div>
+    <p>K คือทุนต่อแรงงานที่มีประสิทธิภาพ (eL) สมการ Y = A·√K หมายความว่าทุนมากขึ้นทำให้ผลผลิตเพิ่ม แต่เป็นแบบ<b>ผลตอบแทนลดลง</b> คือทุนที่เพิ่มทีละหน่วยให้ผลผลิตเพิ่มน้อยลงเรื่อย ๆ ส่วน A ทำให้เส้นผลผลิตทั้งเส้นสูงขึ้นหรือต่ำลง</p>
+    <ul>
+      <li><b>s (อัตราการออม):</b> s สูงขึ้น การลงทุนมากขึ้น ทุน K จึงเพิ่มเร็วขึ้น</li>
+      <li><b>δ (อัตราค่าเสื่อม):</b> δ สูงขึ้น ทุนเสื่อมสภาพมากขึ้นในแต่ละช่วง ทุน K จึงลดลงเร็วขึ้น</li>
+      <li><b>A (เทคโนโลยี ความรู้ และนวัตกรรม):</b> A สูงขึ้น ทุนหนึ่งหน่วยสร้างผลผลิตได้มากขึ้น การลงทุน sY จึงมากขึ้นและทุน K เพิ่มขึ้น</li>
+    </ul>
+    <p>สภาวะคงตัว (steady state) คือจุดที่การลงทุนเท่ากับค่าเสื่อม sY = δK ทำให้ ΔK = 0:</p>
+    <div class="eq">
+      <div>K* = (sA/δ)²</div>
+      <div>Y* = A·√K* = sA²/δ</div>
+      <div>C* = (1 − s)·Y*</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>ตัวแปร</h2>
+      <div class="row"><label for="s">s – อัตราการออม <output id="sv"></output></label><input id="s" type="range" min="0.05" max="0.9" step="0.01"></div>
+      <div class="row"><label for="d">δ – อัตราค่าเสื่อม <output id="dv"></output></label><input id="d" type="range" min="0.005" max="0.1" step="0.001"></div>
+      <div class="row"><label for="a">A – เทคโนโลยี <output id="av"></output></label><input id="a" type="range" min="1" max="5" step="0.1"></div>
+      <div class="btns">
+        <button id="reset">รีเซ็ตเป็นค่าในสไลด์</button>
+        <button id="mine">ค่าของฉัน</button>
+      </div>
+      <div class="note" id="mineNote"></div>
+    </div>
+    <div class="card">
+      <h2>ผลลัพธ์</h2>
+      <div class="res">
+        <div><small>K*</small><b id="rK"></b></div>
+        <div><small>Y*</small><b id="rY"></b></div>
+        <div><small>C*</small><b id="rC"></b></div>
+      </div>
+      <div class="note" id="aUsed"></div>
+      <h2 style="margin-top:16px">สถานการณ์เศรษฐกิจดิจิทัล (AI)</h2>
+      <p style="margin:0 0 8px">ประเทศไทยนำ AI มาใช้ ทำให้ A เพิ่มขึ้น 20% (A × 1.2)</p>
+      <div class="btns"><button id="ai" aria-pressed="false">นำ AI มาใช้: ปิด</button></div>
+      <div class="res" style="margin-top:10px">
+        <div><small>Y* ก่อน</small><b id="yb"></b></div>
+        <div><small>Y* หลัง</small><b id="ya"></b></div>
+        <div><small>เปลี่ยนไป</small><b id="yc"></b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. กราฟ: Y, sY และ δK เทียบกับ K</h2>
+    <div class="chartbox"><svg id="chart" viewBox="0 0 720 420" role="img" aria-label="Solow model chart"></svg></div>
+    <div class="legend">
+      <span><i style="background:var(--c1)"></i>ผลผลิต Y = A√K</span>
+      <span><i style="background:var(--c2)"></i>การลงทุน sY</span>
+      <span><i style="background:var(--c3)"></i>ค่าเสื่อม δK</span>
+    </div>
+    <div class="note" id="chartNote"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. ตารางค่า K = 0, 200, …, 2,000</h2>
+    <div class="tw"><table>
+      <thead><tr><th>K</th><th>Y = A√K</th><th>sY</th><th>δK</th><th>ΔK = sY − δK</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<script>
+// ===== EDIT THESE TWO LINES =====
+var NAME = "พงศกรณ์ ครองศิล";
+var STUDENT_ID = "671610248";
+// ================================
+var SLIDE = {s:0.3, d:0.02, a:2.6};
+var st = {s:0.3, d:0.02, a:2.6, ai:false};
+var $ = function(id){return document.getElementById(id)};
+document.getElementById("nm").textContent = NAME;
+document.getElementById("sid").textContent = STUDENT_ID;
+
+function calc(s,d,A){var K=Math.pow(s*A/d,2);var Y=A*Math.sqrt(K);return {K:K,Y:Y,C:(1-s)*Y};}
+function f3(x){return x.toLocaleString("en-US",{minimumFractionDigits:3,maximumFractionDigits:3});}
+function f1(x){return x.toLocaleString("en-US",{minimumFractionDigits:1,maximumFractionDigits:1});}
+function aEff(){return st.ai ? st.a*1.2 : st.a;}
+
+function digits(){
+  var t=(STUDENT_ID||"").replace(/\D/g,"");
+  return t.length>=2 ? {x:+t[t.length-1], y:+t[t.length-2]} : null;
+}
+function clamp(v,lo,hi){return Math.min(hi,Math.max(lo,v));}
+
+function render(){
+  var s=st.s,d=st.d,A=aEff();
+  $("sv").textContent=s.toFixed(2); $("dv").textContent=d.toFixed(3); $("av").textContent=st.a.toFixed(1);
+  var r=calc(s,d,A);
+  $("rK").textContent=f3(r.K); $("rY").textContent=f3(r.Y); $("rC").textContent=f3(r.C);
+  $("aUsed").textContent="ค่า A ที่ใช้คำนวณ: "+A.toFixed(2)+(st.ai?" (เปิดสถานการณ์ AI: A × 1.2)":"");
+  // AI panel: always before vs after from slider A
+  var b=calc(s,d,st.a), a=calc(s,d,st.a*1.2);
+  $("yb").textContent=f3(b.Y); $("ya").textContent=f3(a.Y);
+  $("yc").textContent="+"+f3(a.Y-b.Y)+" (+"+f1((a.Y/b.Y-1)*100)+"%)";
+  $("ai").textContent="นำ AI มาใช้: "+(st.ai?"เปิด":"ปิด"); $("ai").classList.toggle("on",st.ai); $("ai").setAttribute("aria-pressed",st.ai);
+  drawChart(s,d,A,r);
+  var h="";
+  for(var K=0;K<=2000;K+=200){
+    var Y=A*Math.sqrt(K), I=s*Y, D=d*K;
+    h+="<tr><td>"+K.toLocaleString("en-US")+"</td><td>"+f3(Y)+"</td><td>"+f3(I)+"</td><td>"+f3(D)+"</td><td>"+f3(I-D)+"</td></tr>";
+  }
+  $("tb").innerHTML=h;
+}
+
+function drawChart(s,d,A,r){
+  var W=720,H=420,L=58,R=20,T=20,B=44,KM=2000;
+  var yMax=Math.max(A*Math.sqrt(KM), d*KM, s*A*Math.sqrt(KM))*1.05;
+  var X=function(k){return L+(k/KM)*(W-L-R)}, Yp=function(v){return H-B-(v/yMax)*(H-T-B)};
+  var o="";
+  var step=niceStep(yMax/5);
+  for(var v=0;v<=yMax;v+=step){o+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Yp(v)+'" y2="'+Yp(v)+'" stroke="var(--line)"/><text x="'+(L-8)+'" y="'+(Yp(v)+4)+'" text-anchor="end">'+(+v.toFixed(2))+'</text>';}
+  for(var k=0;k<=KM;k+=400){o+='<text x="'+X(k)+'" y="'+(H-B+18)+'" text-anchor="middle">'+k+'</text>';}
+  o+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+(H-B)+'" y2="'+(H-B)+'" stroke="var(--muted)"/><line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+(H-B)+'" stroke="var(--muted)"/>';
+  o+='<text x="'+((L+W-R)/2)+'" y="'+(H-6)+'" text-anchor="middle">K (ทุนต่อแรงงานที่มีประสิทธิภาพ)</text>';
+  var p="";
+  for(var i=0;i<=200;i++){var kk=KM*i/200;p+=(i?"L":"M")+X(kk).toFixed(1)+" "+Yp(A*Math.sqrt(kk)).toFixed(1);}
+  o+='<path d="'+p+'" fill="none" stroke="var(--c1)" stroke-width="2.5"/>';
+  var p2="";
+  for(var j=0;j<=200;j++){var k2=KM*j/200;p2+=(j?"L":"M")+X(k2).toFixed(1)+" "+Yp(s*A*Math.sqrt(k2)).toFixed(1);}
+  o+='<path d="'+p2+'" fill="none" stroke="var(--c2)" stroke-width="2.5"/>';
+  o+='<line x1="'+X(0)+'" y1="'+Yp(0)+'" x2="'+X(KM)+'" y2="'+Yp(d*KM)+'" stroke="var(--c3)" stroke-width="2.5"/>';
+  if(r.K<=KM){
+    var cx=X(r.K), cy=Yp(d*r.K);
+    o+='<line x1="'+cx+'" x2="'+cx+'" y1="'+cy+'" y2="'+(H-B)+'" stroke="var(--muted)" stroke-dasharray="4 4"/>';
+    o+='<circle cx="'+cx+'" cy="'+cy+'" r="6" fill="var(--text)" stroke="var(--card)" stroke-width="2"/>';
+    var tx=cx>W-200?cx-10:cx+10, an=cx>W-200?"end":"start";
+    o+='<text x="'+tx+'" y="'+(cy-12)+'" text-anchor="'+an+'" style="fill:var(--text);font-weight:700">สภาวะคงตัว K*='+f1(r.K)+', sY*='+f1(s*r.Y)+'</text>';
+    $("chartNote").textContent="";
+  } else {
+    $("chartNote").innerHTML='<span class="warn">สภาวะคงตัว K* = '+f3(r.K)+' เกินช่วง K = 2,000 จึงไม่แสดงจุดบนกราฟ</span>';
+  }
+  $("chart").innerHTML=o;
+}
+function niceStep(x){var m=Math.pow(10,Math.floor(Math.log10(x))),n=x/m;return (n<1.5?1:n<3.5?2:n<7.5?5:10)*m;}
+
+function sync(){$("s").value=st.s;$("d").value=st.d;$("a").value=st.a;}
+$("s").oninput=function(){st.s=+this.value;render();};
+$("d").oninput=function(){st.d=+this.value;render();};
+$("a").oninput=function(){st.a=+this.value;render();};
+$("ai").onclick=function(){st.ai=!st.ai;render();};
+$("reset").onclick=function(){st.s=SLIDE.s;st.d=SLIDE.d;st.a=SLIDE.a;st.ai=false;$("mineNote").textContent="";sync();render();};
+$("mine").onclick=function(){
+  var g=digits();
+  if(!g){$("mineNote").textContent="ใส่ STUDENT_ID ในไฟล์ (ต้นสคริปต์) เพื่อให้อ่านเลขสองหลักสุดท้ายได้";return;}
+  st.s=+(0.20+g.x*0.02).toFixed(3); st.d=+(0.02+g.y*0.002).toFixed(3); st.a=2.6; st.ai=false;
+  $("mineNote").textContent="ค่าของฉัน: เลขหลักสุดท้าย "+g.x+", หลักรองสุดท้าย "+g.y+" → s = "+st.s.toFixed(2)+", δ = "+st.d.toFixed(3)+", A = 2.6";
+  sync();render();
+};
+sync();render();
+</script>
+</body>
+</html>
